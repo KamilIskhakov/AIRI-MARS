@@ -4,14 +4,16 @@
 Mistral/OpenRouter. Все пути задаются явно; скрипты не удаляют существующие
 файлы.
 
-Если используется готовый архив `airi_mars_training_bundle_v1_20260820.zip`,
+Если используется готовый архив `airi_mars_training_bundle_v2_20260820.zip`,
 выполните инструкцию [TRAINING_BUNDLE.md](TRAINING_BUNDLE.md): в нём корпус,
 directional-разметка и ModernBERT уже разложены в ожидаемую структуру.
 
 ## 1. Получить код
 
 ```bash
-cd /home/<user>
+export AIRI_HOME="${AIRI_HOME:-$HOME/airi_mars}"
+mkdir -p "$AIRI_HOME"
+cd "$AIRI_HOME"
 git clone https://github.com/KamilIskhakov/AIRI-MARS.git
 cd AIRI-MARS
 ```
@@ -36,7 +38,7 @@ CUDA-сборку способом, принятым на сервере.
 Рекомендуемая структура может находиться вне Git-репозитория:
 
 ```text
-/home/<user>/airi_artifacts/
+$AIRI_HOME/airi_artifacts/
 ├── corpus/
 │   ├── train.jsonl
 │   ├── val.jsonl
@@ -77,10 +79,13 @@ directional JSONL        38 строк
 ## 4. Обязательный one-step smoke test
 
 ```bash
-export CORPUS_DIR=/home/<user>/airi_artifacts/corpus
-export BASE_MODEL=/home/<user>/airi_artifacts/modernbert
-export DIRECTIONAL_JSONL=/home/<user>/airi_artifacts/directional/directional_disagreements_v2.jsonl
-export OUTPUT_DIR=/home/<user>/airi_runs/smoke_$(date +%Y%m%d_%H%M%S)
+export AIRI_ARTIFACTS="$AIRI_HOME/airi_artifacts"
+export CORPUS_DIR="$AIRI_ARTIFACTS/corpus"
+export BASE_MODEL="$AIRI_ARTIFACTS/modernbert"
+export DIRECTIONAL_JSONL="$AIRI_ARTIFACTS/directional/directional_disagreements_v2.jsonl"
+export OUTPUT_ROOT="${OUTPUT_ROOT:-$AIRI_HOME/runs}"
+mkdir -p "$OUTPUT_ROOT"
+export OUTPUT_DIR="$OUTPUT_ROOT/smoke_$(date +%Y%m%d_%H%M%S)"
 
 DEVICE=cuda PRECISION=bf16 MAX_LENGTH=128 \
 bash mvp/run_multitask_smoke.sh
@@ -115,10 +120,7 @@ $OUTPUT_DIR/fixture/summary.json
 ## 5. Полное обучение
 
 ```bash
-export CORPUS_DIR=/home/<user>/airi_artifacts/corpus
-export BASE_MODEL=/home/<user>/airi_artifacts/modernbert
-export DIRECTIONAL_JSONL=/home/<user>/airi_artifacts/directional/directional_disagreements_v2.jsonl
-export OUTPUT_DIR=/home/<user>/airi_runs/multitask_$(date +%Y%m%d_%H%M%S)
+export OUTPUT_DIR="$OUTPUT_ROOT/multitask_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$(dirname "$OUTPUT_DIR")"
 
 DEVICE=cuda \

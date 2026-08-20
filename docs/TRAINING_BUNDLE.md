@@ -1,6 +1,6 @@
-# AIRI MARS H100 training bundle v1
+# AIRI MARS H100 training bundle v2
 
-Архив `airi_mars_training_bundle_v1_20260820.zip` содержит все внешние
+Архив `airi_mars_training_bundle_v2_20260820.zip` содержит все внешние
 артефакты, необходимые для запуска уже подготовленного multi-head trainer:
 канонический корпус, ranking-пары, directional-разметку и локальный ModernBERT.
 API-ключи и сетевой доступ не нужны.
@@ -8,7 +8,7 @@ API-ключи и сетевой доступ не нужны.
 ## Содержимое архива
 
 ```text
-airi_mars_training_bundle_v1/
+airi_mars_training_bundle_v2/
 ├── README.md
 ├── SHA256SUMS
 ├── corpus/
@@ -33,40 +33,45 @@ airi_mars_training_bundle_v1/
 
 ## Распаковка на сервере
 
-Работаем только внутри `/home/fvaluev`:
+Выберите рабочую директорию на доступном сервере. По умолчанию инструкция
+использует каталог внутри домашней директории текущего пользователя:
 
 ```bash
-cd /home/fvaluev
-unzip airi_mars_training_bundle_v1_20260820.zip
-cd /home/fvaluev/airi_mars_training_bundle_v1
+export AIRI_HOME="${AIRI_HOME:-$HOME/airi_mars}"
+mkdir -p "$AIRI_HOME"
+cd "$AIRI_HOME"
+unzip /path/to/airi_mars_training_bundle_v2_20260820.zip
+cd "$AIRI_HOME/airi_mars_training_bundle_v2"
 shasum -a 256 -c SHA256SUMS
 ```
 
 Все строки проверки должны завершиться `OK`.
 
-Код располагается отдельно:
+Код располагается рядом с bundle:
 
 ```text
-/home/fvaluev/AIRI-MARS
+$AIRI_HOME/AIRI-MARS
 ```
 
 Итоговая структура:
 
 ```text
-/home/fvaluev/
+$AIRI_HOME/
 ├── AIRI-MARS/
-└── airi_mars_training_bundle_v1/
+└── airi_mars_training_bundle_v2/
 ```
 
 ## Пути для runner-ов
 
 ```bash
-cd /home/fvaluev/AIRI-MARS
+cd "$AIRI_HOME/AIRI-MARS"
 
-export AIRI_ARTIFACTS=/home/fvaluev/airi_mars_training_bundle_v1
+export AIRI_ARTIFACTS="$AIRI_HOME/airi_mars_training_bundle_v2"
 export CORPUS_DIR="$AIRI_ARTIFACTS/corpus"
 export BASE_MODEL="$AIRI_ARTIFACTS/modernbert"
 export DIRECTIONAL_JSONL="$AIRI_ARTIFACTS/directional/directional_disagreements_v2.jsonl"
+export OUTPUT_ROOT="${OUTPUT_ROOT:-$AIRI_HOME/runs}"
+mkdir -p "$OUTPUT_ROOT"
 ```
 
 Именно эти три переменные подхватывают `run_multitask_smoke.sh` и
@@ -75,7 +80,7 @@ export DIRECTIONAL_JSONL="$AIRI_ARTIFACTS/directional/directional_disagreements_
 ## Проверка одного шага
 
 ```bash
-export OUTPUT_DIR=/home/fvaluev/airi_runs/smoke_$(date +%Y%m%d_%H%M%S)
+export OUTPUT_DIR="$OUTPUT_ROOT/smoke_$(date +%Y%m%d_%H%M%S)"
 
 DEVICE=cuda \
 PRECISION=bf16 \
@@ -97,7 +102,7 @@ backward, optimizer step, validation, сохранение, повторную �
 ## Полное обучение
 
 ```bash
-export OUTPUT_DIR=/home/fvaluev/airi_runs/multitask_$(date +%Y%m%d_%H%M%S)
+export OUTPUT_DIR="$OUTPUT_ROOT/multitask_$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$(dirname "$OUTPUT_DIR")"
 
 DEVICE=cuda \
