@@ -4,6 +4,10 @@
 Mistral/OpenRouter. Все пути задаются явно; скрипты не удаляют существующие
 файлы.
 
+Если используется готовый архив `airi_mars_training_bundle_v1_20260820.zip`,
+выполните инструкцию [TRAINING_BUNDLE.md](TRAINING_BUNDLE.md): в нём корпус,
+directional-разметка и ModernBERT уже разложены в ожидаемую структуру.
+
 ## 1. Получить код
 
 ```bash

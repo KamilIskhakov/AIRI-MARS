@@ -17,6 +17,7 @@ models/
 runs/
 logs/
 tmp/
+artifacts/
 
 # Generated local viewers and reports.
 *.html
