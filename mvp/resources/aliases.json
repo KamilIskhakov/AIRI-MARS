@@ -1,0 +1,44 @@
+{
+  "groups": [
+    {
+      "canonical": "United States",
+      "strict_aliases": ["U.S.", "US", "USA", "U.S.A.", "United States", "United States of America"],
+      "review_aliases": ["America"]
+    },
+    {
+      "canonical": "United Kingdom",
+      "strict_aliases": ["UK", "U.K.", "Britain", "Great Britain", "United Kingdom"],
+      "review_aliases": []
+    },
+    {
+      "canonical": "European Union",
+      "strict_aliases": ["EU", "E.U.", "European Union"],
+      "review_aliases": []
+    },
+    {
+      "canonical": "International Criminal Court",
+      "strict_aliases": ["ICC", "International Criminal Court"],
+      "review_aliases": []
+    },
+    {
+      "canonical": "United Nations",
+      "strict_aliases": ["UN", "U.N.", "United Nations"],
+      "review_aliases": []
+    },
+    {
+      "canonical": "Apple",
+      "strict_aliases": ["Apple", "Apple Inc.", "Apple, Inc."],
+      "review_aliases": []
+    },
+    {
+      "canonical": "Microsoft",
+      "strict_aliases": ["Microsoft", "Microsoft Corp.", "Microsoft Corporation"],
+      "review_aliases": []
+    },
+    {
+      "canonical": "OpenAI",
+      "strict_aliases": ["OpenAI", "OpenAI Inc.", "OpenAI, Inc."],
+      "review_aliases": []
+    }
+  ]
+}

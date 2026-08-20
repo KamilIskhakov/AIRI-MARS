@@ -1,0 +1,26 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+*.log
+
+# Secrets and local environments.
+.env
+*.env
+!.env.example
+.venv/
+venv/
+
+# Large/private artifacts are transferred to the training host separately.
+data/
+data_old/
+models/
+runs/
+logs/
+tmp/
+
+# Generated local viewers and reports.
+*.html
+
+# Editor state.
+.vscode/
+.idea/
