@@ -117,6 +117,10 @@ $OUTPUT_DIR/fixture/summary.json
 `head.*` или `decoder.*`: это старая MLM-голова. Multi-head trainer загружает
 общий ModernBERT encoder и создаёт новые classification heads.
 
+В режиме `marked_pair` используется target-centered truncation: токен-бюджет
+распределяется между исходным и изменённым текстом, а оба отмеченных упоминания
+гарантированно сохраняются во входе.
+
 ## 5. Полное обучение
 
 ```bash

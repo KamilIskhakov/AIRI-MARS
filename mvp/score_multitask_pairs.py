@@ -13,7 +13,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from transformers import AutoTokenizer
 
-from train_cross_encoder import materialize_contexts, pick_device, text_fields
+from train_cross_encoder import encode_text_pair, materialize_contexts, pick_device
 from train_multitask_cross_encoder import (
     NLI_NAMES,
     RELATION_NAMES,
@@ -66,8 +66,7 @@ class ScoringDataset(Dataset):
         return len(self.rows)
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
-        left, right = text_fields(self.rows[idx], self.input_mode)
-        encoded = self.tokenizer(left, right, truncation=True, max_length=self.max_length, padding=False)
+        encoded = encode_text_pair(self.tokenizer, self.rows[idx], self.input_mode, self.max_length)
         encoded["row_idx"] = idx
         return encoded
 

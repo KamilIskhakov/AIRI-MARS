@@ -235,6 +235,66 @@ def text_fields(item: dict[str, Any], mode: str) -> tuple[str, str]:
     raise ValueError(f"Unknown input mode: {mode}")
 
 
+def crop_around_marked_span(
+    token_ids: list[int], start_id: int, end_id: int, budget: int
+) -> list[int] | None:
+    """Keep a marked entity span and balanced context within a token budget."""
+    try:
+        span_start = token_ids.index(start_id)
+        span_end = token_ids.index(end_id, span_start + 1)
+    except ValueError:
+        return None
+    span_size = span_end - span_start + 1
+    if span_size > budget:
+        return None
+    if len(token_ids) <= budget:
+        return token_ids
+
+    context_budget = budget - span_size
+    left_context = context_budget // 2
+    window_start = max(0, span_start - left_context)
+    window_end = min(len(token_ids), window_start + budget)
+    window_start = max(0, window_end - budget)
+    if not (window_start <= span_start and span_end < window_end):
+        window_start = max(0, span_end + 1 - budget)
+        window_end = min(len(token_ids), window_start + budget)
+    return token_ids[window_start:window_end]
+
+
+def encode_text_pair(tokenizer, item: dict[str, Any], mode: str, max_length: int) -> dict[str, Any]:
+    """Tokenize a pair while guaranteeing marked spans survive truncation."""
+    left, right = text_fields(item, mode)
+    if mode != "marked_pair":
+        return tokenizer(left, right, truncation=True, max_length=max_length, padding=False)
+
+    special_count = tokenizer.num_special_tokens_to_add(pair=True)
+    content_budget = max_length - special_count
+    if content_budget < 8:
+        raise ValueError(f"max_length={max_length} is too small for a marked text pair")
+    left_budget = content_budget // 2
+    right_budget = content_budget - left_budget
+    left_ids = tokenizer(left, add_special_tokens=False, truncation=False)["input_ids"]
+    right_ids = tokenizer(right, add_special_tokens=False, truncation=False)["input_ids"]
+    left_cropped = crop_around_marked_span(
+        left_ids, tokenizer.convert_tokens_to_ids("[E1]"), tokenizer.convert_tokens_to_ids("[/E1]"), left_budget
+    )
+    right_cropped = crop_around_marked_span(
+        right_ids, tokenizer.convert_tokens_to_ids("[E2]"), tokenizer.convert_tokens_to_ids("[/E2]"), right_budget
+    )
+    if left_cropped is None or right_cropped is None:
+        return tokenizer(left, right, truncation=True, max_length=max_length, padding=False)
+    left_window = tokenizer.decode(left_cropped, skip_special_tokens=False, clean_up_tokenization_spaces=False)
+    right_window = tokenizer.decode(right_cropped, skip_special_tokens=False, clean_up_tokenization_spaces=False)
+    return tokenizer(
+        left_window,
+        right_window,
+        add_special_tokens=True,
+        padding=False,
+        truncation=True,
+        max_length=max_length,
+    )
+
+
 class PairDataset(Dataset):
     def __init__(self, items: list[dict[str, Any]], tokenizer, max_length: int, mode: str):
         self.items = items
@@ -247,14 +307,7 @@ class PairDataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
         item = self.items[idx]
-        left, right = text_fields(item, self.mode)
-        enc = self.tokenizer(
-            left,
-            right,
-            truncation=True,
-            max_length=self.max_length,
-            padding=False,
-        )
+        enc = encode_text_pair(self.tokenizer, item, self.mode, self.max_length)
         enc["labels"] = int(item["label"])
         enc["meta_idx"] = idx
         return enc
@@ -271,8 +324,7 @@ class RankingDataset(Dataset):
         return len(self.items)
 
     def encode(self, item: dict[str, Any]) -> dict[str, Any]:
-        left, right = text_fields(item, self.mode)
-        return self.tokenizer(left, right, truncation=True, max_length=self.max_length, padding=False)
+        return encode_text_pair(self.tokenizer, item, self.mode, self.max_length)
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
         item = self.items[idx]

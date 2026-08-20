@@ -32,7 +32,7 @@ from train_cross_encoder import (
     norm_key,
     pick_device,
     probability_metrics,
-    text_fields,
+    encode_text_pair,
 )
 
 
@@ -154,8 +154,7 @@ class MultiTaskDataset(Dataset):
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
         row = self.rows[idx]
-        left, right = text_fields(row, self.input_mode)
-        encoded = self.tokenizer(left, right, truncation=True, max_length=self.max_length, padding=False)
+        encoded = encode_text_pair(self.tokenizer, row, self.input_mode, self.max_length)
         encoded["preserve_label"] = int(row["label"])
         encoded["nli_a_to_b"] = int(row["nli_a_to_b"])
         encoded["nli_b_to_a"] = int(row["nli_b_to_a"])
@@ -491,6 +490,7 @@ def main() -> None:
         "base_model": args.base_model,
         "dropout": args.dropout,
         "input_mode": args.input_mode,
+        "truncation_strategy": "target_centered_marked_pair_v1",
         "max_length": args.max_length,
         "nli_labels": NLI_LABELS,
         "relation_labels": RELATION_LABELS,
